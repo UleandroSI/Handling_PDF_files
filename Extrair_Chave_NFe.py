@@ -1,5 +1,6 @@
-# version__ = "0.1"
+# version__ = "0.2"
 # autor__ = "UleandroSI"
+# Fork https://github.com/mgorkove/pdfToTxt/blob/master/code/pToT.py
 
 from io import StringIO
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
@@ -21,13 +22,12 @@ def convert(fname, pages=None):
     manager = PDFResourceManager()
     converter = TextConverter(manager, output, laparams=LAParams())
     interpreter = PDFPageInterpreter(manager, converter)
-
-    #infile = file(fname, 'rb')
-    infile = open(fname, 'rb')
-    for page in PDFPage.get_pages(infile, pagenums):
-        interpreter.process_page(page)
-    infile.close()
     converter.close()
+
+    for page in PDFPage.get_pages(fname, pagenums):
+        interpreter.process_page(page)
+
+#    converter.close()
     text = output.getvalue()
     output.close
     return text
@@ -35,10 +35,10 @@ def convert(fname, pages=None):
 # Chave_de_acesso function - to get the string from the location of the chave de acesso.
 # Retira somente o campo da chave da NF
 def chave_de_acesso(text):
-    onde = stringSaida.find('ACESSO') # Encontrar palavra chave antes dos numeros
+    onde = text.find('ACESSO') # Encontrar palavra chave antes dos numeros
     inicio = onde + 6 # Posição de inicio da chave da NF
-    fim = inicio + 54 # Posição final de todos caracteres da NF
-    numero = stringSaida[inicio:fim]
+    fim = inicio + 56 # Posição final de todos caracteres da NF
+    numero = text[inicio:fim]
     #print(numero) # Teste se captura a string com o numero da chave corretamente.
     return numero
 
@@ -50,13 +50,13 @@ def procurar_arquivos(lista_de_arquivos, caminho):
         local = caminho + '/' + arquivo # Juntar caminho da pasta + nome do arquivo PDF.
         #print(local) #Teste para saber se esta correto o caminho
         arquivoPDF = open(local,'rb') # Abrir cada arquivo PDF para leitura
-        #print(stringSaida,'\n') #Teste para visualizar o conteudo do PDF.
+        #print(arquivoPDF,'\n') #Teste para visualizar o conteudo do PDF.
         text = convert(arquivoPDF) #get string of text content of pdf
         chave = chave_de_acesso(text) # Chamada de funçao para retornar string com o numero da chave.
         chave = chave.replace(" ","") # Remover espaços da chave
         #print(chave)
         numeros_de_chave.write(chave) # Grava chave no arquivo ChavesMMJ.txt
-        numeros_de_chave.write('\n')
+        #numeros_de_chave.write('\n')
         arquivoPDF.close()  # Fechar arquivo PDF lido
 
 
